@@ -18,7 +18,7 @@ const Signup = () => {
     try {
       await account.create(ID.unique(), email, password, name);
 
-      toast.success("Account created 🎉 Now login!");
+      toast.success("Account created, Now login!");
 
       navigate("/");
     } catch (err) {

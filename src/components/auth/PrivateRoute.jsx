@@ -23,7 +23,7 @@ const PrivateRoute = ({ children }) => {
   }, []);
 
   if (loading) {
-    return <div className="text-white text-center mt-10">Loading...</div>; // Or a spinner
+    return <div></div>; 
   }
 
   return isLoggedIn ? children : <Navigate to="/" />;

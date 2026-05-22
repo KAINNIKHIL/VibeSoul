@@ -124,15 +124,9 @@ const StoryPreviewBar = ({ onStoryClick }) => {
       {/* Empty State */}
       {Object.keys(groupedStories).length ===
       0 ? (
-        <div
-          className="
-            text-sm
-            text-gray-400
-            px-3
-          "
-        >
-          No stories yet ✨
-        </div>
+        <div />
+          
+        
       ) : (
         Object.values(groupedStories).map(
           (userStory, index) => (

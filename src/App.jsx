@@ -22,8 +22,11 @@ import { useTheme } from "./context/ThemeContext";
 function AppContent() {
   const { isDark } = useTheme();
   const location = useLocation();
-  const hideNavbarRoutes = ["/", "/signup"];
-  const shouldHideNavbar = hideNavbarRoutes.includes(location.pathname);
+  const shouldHideNavbar =
+  location.pathname === "/" ||
+  location.pathname === "/signup" ||
+  location.pathname.startsWith("/chat/") &&
+  location.pathname !== "/chatlist";
 
   return (
     <>
@@ -63,10 +66,10 @@ function AppContent() {
     `
       relative
       flex
-      p-1
-      min-h-10
+      items-center
+      p-3
+      min-h-[64px]
       rounded-2xl
-      justify-between
       overflow-hidden
       cursor-pointer
       backdrop-blur-xl
@@ -77,7 +80,13 @@ function AppContent() {
     `
   }
   bodyClassName={() =>
-    "text-sm font-medium text-white px-3 py-2"
+    `
+      text-sm
+      font-medium
+      text-white
+      pr-2
+      break-words
+    `
   }
 />
       </div>

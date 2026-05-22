@@ -79,11 +79,104 @@ const UserProfile = () => {
   }, []);
 
   if (!user || !userProfile)
-    return (
-      <div className="flex items-center justify-center h-full py-4">
-        <div className="w-10 h-10 border-4 border-pink-600 border-t-transparent rounded-full animate-spin"></div>
+  return (
+    <div className="relative min-h-screen overflow-hidden bg-[#0b1120] text-white animate-pulse">
+
+      {/* Background Glow */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+
+        <div className="absolute top-[-100px] left-[-80px] w-[280px] h-[280px] bg-pink-500/10 blur-3xl rounded-full" />
+
+        <div className="absolute bottom-[-120px] right-[-100px] w-[320px] h-[320px] bg-violet-500/10 blur-3xl rounded-full" />
       </div>
-    );
+
+      {/* Main */}
+      <div className="relative z-10 max-w-4xl mx-auto px-4 py-6">
+
+        {/* Profile Card Skeleton */}
+        <div className="bg-white/[0.05] border border-white/10 backdrop-blur-2xl rounded-3xl p-6 shadow-2xl">
+
+          {/* Top */}
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+
+            {/* Left */}
+            <div className="flex items-center gap-5">
+
+              {/* Avatar */}
+              <div className="relative w-24 h-24 rounded-full bg-white/10" />
+
+              {/* Info */}
+              <div className="space-y-3">
+
+                <div className="h-5 w-40 bg-white/10 rounded-lg" />
+                <div className="h-4 w-28 bg-white/10 rounded-lg" />
+                <div className="h-6 w-20 bg-white/10 rounded-full mt-2" />
+
+              </div>
+            </div>
+
+            {/* Buttons */}
+            <div className="flex gap-3">
+
+              <div className="h-11 w-36 bg-white/10 rounded-2xl" />
+              <div className="h-11 w-36 bg-white/10 rounded-2xl" />
+
+            </div>
+          </div>
+
+          {/* Bio */}
+          <div className="mt-6 space-y-2">
+            <div className="h-3 w-full bg-white/10 rounded" />
+            <div className="h-3 w-5/6 bg-white/10 rounded" />
+            <div className="h-3 w-2/3 bg-white/10 rounded" />
+          </div>
+
+          {/* Stats */}
+          <div className="grid grid-cols-3 gap-4 mt-8">
+
+            <div className="h-20 bg-white/10 rounded-2xl" />
+            <div className="h-20 bg-white/10 rounded-2xl" />
+            <div className="h-20 bg-white/10 rounded-2xl" />
+
+          </div>
+        </div>
+
+        {/* Posts Section */}
+        <div className="mt-8">
+
+          {/* Header */}
+          <div className="flex justify-between mb-5">
+            <div className="h-6 w-40 bg-white/10 rounded" />
+            <div className="h-4 w-20 bg-white/10 rounded" />
+          </div>
+
+          {/* Grid Skeleton */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className="rounded-3xl overflow-hidden bg-white/[0.05] border border-white/10"
+              >
+
+                <div className="h-72 bg-white/10" />
+
+                <div className="p-4 space-y-3">
+                  <div className="h-3 w-full bg-white/10 rounded" />
+                  <div className="h-3 w-5/6 bg-white/10 rounded" />
+                  <div className="h-3 w-2/3 bg-white/10 rounded" />
+
+                  <div className="h-3 w-24 bg-white/10 rounded mt-3" />
+                </div>
+
+              </div>
+            ))}
+
+          </div>
+        </div>
+      </div>
+    </div>
+  );
   
 
   

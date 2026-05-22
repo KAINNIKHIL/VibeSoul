@@ -477,30 +477,70 @@ const Chat = () => {
 
   // Loading
   if (loading) {
-    return (
-      <div
-        className="
-          flex
-          items-center
-          justify-center
-          h-screen
-          bg-white
-          dark:bg-gray-900
-        "
-      >
-        <div
-          className="
-            w-10
-            h-10
-            border-4
-            border-pink-600
-            border-t-transparent
-            rounded-full
-            animate-spin
-          "
-        />
+    if (loading) {
+  return (
+    <div className="h-[100dvh] bg-[#0b1120] text-white flex flex-col overflow-hidden">
+
+      {/* HEADER (centered like real UI) */}
+      <div className="shrink-0 sticky top-0 z-20 border-b border-white/10 px-4 py-3">
+        <div className="max-w-3xl mx-auto flex items-center gap-3 animate-pulse">
+
+          <div className="w-10 h-10 rounded-full bg-white/10" />
+
+          <div>
+            <div className="w-28 h-3 bg-white/10 rounded mb-2" />
+            <div className="w-16 h-2 bg-white/10 rounded" />
+          </div>
+
+        </div>
       </div>
-    );
+
+      {/* MESSAGES (CENTER FIXED) */}
+      <div className="flex-1 overflow-y-auto px-4 py-5">
+        <div className="max-w-3xl mx-auto space-y-3">
+
+          {[...Array(6)].map((_, i) => (
+            <div
+              key={i}
+              className={`flex ${
+                i % 2 === 0 ? "justify-end" : "justify-start"
+              }`}
+            >
+              <div
+                className={`
+                  animate-pulse
+                  p-3
+                  rounded-2xl
+                  max-w-[75%]
+                  ${
+                    i % 2 === 0
+                      ? "bg-pink-500/20"
+                      : "bg-white/10"
+                  }
+                `}
+              >
+                <div className="h-3 w-40 bg-white/10 rounded mb-2" />
+                <div className="h-3 w-24 bg-white/10 rounded" />
+              </div>
+            </div>
+          ))}
+
+        </div>
+      </div>
+
+      {/* INPUT (centered like real UI) */}
+      <div className="shrink-0 border-t border-white/10 px-4 py-4">
+        <div className="max-w-3xl mx-auto flex gap-3 animate-pulse">
+
+          <div className="flex-1 h-11 rounded-full bg-white/10" />
+          <div className="w-11 h-11 rounded-full bg-white/10" />
+
+        </div>
+      </div>
+
+    </div>
+  );
+}
   }
 
   return (

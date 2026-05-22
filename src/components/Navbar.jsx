@@ -18,6 +18,7 @@ const Navbar = () => {
   const { isDark, setIsDark } = useTheme();
 
   const [currentUserId, setCurrentUserId] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
 
@@ -28,11 +29,23 @@ const Navbar = () => {
         setCurrentUserId(user.$id);
       } catch (err) {
         console.error("Error getting user in Navbar", err);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchUser();
   }, []);
+
+  const Skeleton = () => (
+    <div className="animate-pulse flex items-center gap-3">
+      <div className="w-32 h-6 bg-white/10 rounded-lg" />
+    </div>
+  );
+
+  const IconSkeleton = () => (
+    <div className="w-10 h-10 rounded-2xl bg-white/10 animate-pulse" />
+  );
 
   return (
     <nav
@@ -59,28 +72,35 @@ const Navbar = () => {
         "
       >
         {/* Logo */}
-        <motion.div
-          whileHover={{ scale: 1.03 }}
-          onClick={() => navigate("/feed")}
-          className="
-            flex
-            items-center
-            gap-1
-            text-2xl
-            font-extrabold
-            cursor-pointer
-            select-none
-          "
-        >
-          <span className="text-pink-500">Vibe</span>
-
-          <span className="text-white">Soul</span>
-        </motion.div>
+        {loading ? (
+          <div className="w-28 h-6 bg-white/10 rounded-lg animate-pulse" />
+        ) : (
+          <motion.div
+            whileHover={{ scale: 1.03 }}
+            onClick={() => navigate("/feed")}
+            className="
+              flex
+              items-center
+              gap-1
+              text-2xl
+              font-extrabold
+              cursor-pointer
+              select-none
+            "
+          >
+            <span className="text-pink-500">Vibe</span>
+            <span className="text-white">Soul</span>
+          </motion.div>
+        )}
 
         {/* Search */}
         <div className="hidden sm:flex flex-1 justify-center px-2">
           <div className="w-full max-w-md">
-            <SearchBar />
+            {loading ? (
+              <div className="w-full h-10 bg-white/10 rounded-2xl animate-pulse" />
+            ) : (
+              <SearchBar />
+            )}
           </div>
         </div>
 
@@ -88,72 +108,101 @@ const Navbar = () => {
         <div className="flex items-center gap-2">
 
           {/* Home */}
-          {currentUserId && (
-            <motion.button
-              whileHover={{ scale: 1.08 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => navigate("/feed")}
-              className="
-                p-3
-                rounded-2xl
-                bg-white/5
-                border
-                border-white/10
-                text-gray-300
-                hover:text-pink-400
-                hover:bg-pink-500/10
-                transition
-              "
-            >
-              <Home size={20} />
-            </motion.button>
+          {loading ? (
+            <IconSkeleton />
+          ) : (
+            currentUserId && (
+              <motion.button
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => navigate("/feed")}
+                className="
+                  p-3
+                  rounded-2xl
+                  bg-white/5
+                  border
+                  border-white/10
+                  text-gray-300
+                "
+              >
+                <Home size={20} />
+              </motion.button>
+            )
           )}
 
           {/* Chat */}
-          {currentUserId && (
-            <motion.button
-              whileHover={{ scale: 1.08 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => navigate("/chatlist")}
-              className="
-                p-3
-                rounded-2xl
-                bg-white/5
-                border
-                border-white/10
-                text-gray-300
-                hover:text-pink-400
-                hover:bg-pink-500/10
-                transition
-              "
-            >
-              <MessageCircleMoreIcon size={20} />
-            </motion.button>
+          {loading ? (
+            <IconSkeleton />
+          ) : (
+            currentUserId && (
+              <motion.button
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => navigate("/chatlist")}
+                className="
+                  p-3
+                  rounded-2xl
+                  bg-white/5
+                  border
+                  border-white/10
+                  text-gray-300
+                "
+              >
+                <MessageCircleMoreIcon size={20} />
+              </motion.button>
+            )
           )}
 
           {/* Notification */}
-          {currentUserId && (
-            <div
-              className="
-                p-2
-                rounded-2xl
-                bg-white/5
-                border
-                border-white/10
-                hover:bg-pink-500/10
-                transition
-              "
-            >
-              <NotificationBell currentUserId={currentUserId} />
-            </div>
+          {loading ? (
+            <IconSkeleton />
+          ) : (
+            currentUserId && (
+              <div
+                className="
+                  p-2
+                  rounded-2xl
+                  bg-white/5
+                  border
+                  border-white/10
+                "
+              >
+                <NotificationBell currentUserId={currentUserId} />
+              </div>
+            )
           )}
 
           {/* Profile */}
-          {currentUserId && (
+          {loading ? (
+            <IconSkeleton />
+          ) : (
+            currentUserId && (
+              <motion.button
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => navigate("/profile")}
+                className="
+                  p-3
+                  rounded-2xl
+                  bg-white/5
+                  border
+                  border-white/10
+                  text-gray-300
+                "
+              >
+                <User size={20} />
+              </motion.button>
+            )
+          )}
+
+          {/* Theme */}
+          {loading ? (
+            <IconSkeleton />
+          ) : (
             <motion.button
               whileHover={{ scale: 1.08 }}
               whileTap={{ scale: 0.95 }}
-              onClick={() => navigate("/profile")}
+              onClick={() => setIsDark((prev) => !prev)}
               className="
                 p-3
                 rounded-2xl
@@ -161,44 +210,25 @@ const Navbar = () => {
                 border
                 border-white/10
                 text-gray-300
-                hover:text-pink-400
-                hover:bg-pink-500/10
-                transition
               "
             >
-              <User size={20} />
+              {isDark ? (
+                <Sun size={20} className="text-yellow-400" />
+              ) : (
+                <Moon size={20} />
+              )}
             </motion.button>
           )}
-
-          {/* Theme Toggle */}
-          <motion.button
-            whileHover={{ scale: 1.08 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setIsDark((prev) => !prev)}
-            className="
-              p-3
-              rounded-2xl
-              bg-white/5
-              border
-              border-white/10
-              text-gray-300
-              hover:text-yellow-400
-              hover:bg-yellow-500/10
-              transition
-            "
-          >
-            {isDark ? (
-              <Sun size={20} className="text-yellow-400" />
-            ) : (
-              <Moon size={20} />
-            )}
-          </motion.button>
         </div>
       </div>
 
       {/* Mobile Search */}
       <div className="sm:hidden px-4 pb-3">
-        <SearchBar />
+        {loading ? (
+          <div className="w-full h-10 bg-white/10 rounded-2xl animate-pulse" />
+        ) : (
+          <SearchBar />
+        )}
       </div>
     </nav>
   );

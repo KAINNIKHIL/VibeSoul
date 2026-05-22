@@ -43,9 +43,65 @@ const FollowerList = () => {
     fetchFollowers();
   }, [userId]);
 
-  if (loading) return <div className="flex items-center justify-center h-full py-4">
-  <div className="w-10 h-10 border-4 border-pink-600 border-t-transparent rounded-full animate-spin"></div>
-</div>;
+  if (loading)
+  return (
+    <div className="min-h-screen bg-[#0b1120] text-white relative overflow-hidden px-4 py-8 animate-pulse">
+
+      {/* Glow Background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+
+        <div className="absolute top-[-120px] left-[-80px] w-[300px] h-[300px] bg-pink-500/10 blur-3xl rounded-full" />
+        <div className="absolute bottom-[-120px] right-[-80px] w-[320px] h-[320px] bg-violet-500/10 blur-3xl rounded-full" />
+
+      </div>
+
+      <div className="relative z-10 max-w-3xl mx-auto">
+
+        {/* Header Skeleton */}
+        <div className="flex items-center justify-between mb-8">
+
+          <div className="space-y-3">
+            <div className="h-7 w-40 bg-white/10 rounded-lg" />
+            <div className="h-4 w-56 bg-white/10 rounded-lg" />
+          </div>
+
+          <div className="h-10 w-28 bg-white/10 rounded-2xl" />
+
+        </div>
+
+        {/* List Skeleton */}
+        <div className="space-y-4">
+
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className="flex items-center justify-between rounded-3xl border border-white/10 bg-white/[0.05] p-4"
+            >
+
+              {/* Left */}
+              <div className="flex items-center gap-4">
+
+                {/* Avatar */}
+                <div className="w-16 h-16 rounded-full bg-white/10" />
+
+                {/* Info */}
+                <div className="space-y-2">
+                  <div className="h-4 w-32 bg-white/10 rounded" />
+                  <div className="h-3 w-20 bg-white/10 rounded" />
+                </div>
+
+              </div>
+
+              {/* Button */}
+              <div className="h-9 w-20 bg-white/10 rounded-2xl" />
+
+            </div>
+          ))}
+
+        </div>
+      </div>
+    </div>
+  );
 
   if (followers.length === 0) return <p className="text-center">No followers yet.</p>;
 
