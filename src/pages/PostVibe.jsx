@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 import {
   databases,
   storage,
@@ -11,6 +12,7 @@ const PostVibe = () => {
   const [vibe, setVibe] = useState("");
   const [image, setImage] = useState(null);
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -62,10 +64,14 @@ const PostVibe = () => {
         }
       );
 
-      toast.success("Vibe posted!");
+      
 
-      setVibe("");
-      setImage(null);
+setVibe("");
+setImage(null);
+
+setTimeout(() => {
+  navigate("/feed");
+}, 1200);
 
     } catch (err) {
       toast.error(
@@ -456,7 +462,7 @@ const PostVibe = () => {
             disabled:opacity-50
           "
         >
-          Post Vibe
+           {loading ? "Sharing..." : "Post Vibe"}
         </button>
       </form>
     </div>
