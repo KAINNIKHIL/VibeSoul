@@ -380,59 +380,70 @@ const VibeCard = ({
       </AnimatePresence>
 
       {/* COMMENT FORM */}
-      <form
-        onSubmit={(e) =>
-          handleCommentSubmit(e, vibe.$id)
-        }
-        className="mt-5 flex gap-2"
-      >
-        <input
-          type="text"
-          placeholder="Write a comment..."
-          value={commentInput[vibe.$id] || ""}
-          onChange={(e) =>
-            handleCommentChange(e, vibe.$id)
-          }
-          className="
-            flex-1
-            rounded-2xl
-            px-4
-            py-3
-            bg-white/5
-            border
-            border-white/10
-            text-white
-            placeholder:text-gray-500
-            focus:outline-none
-            focus:ring-2
-            focus:ring-pink-500/30
-            focus:border-pink-500
-            transition-all
-          "
-        />
+      {/* COMMENT FORM */}
+<form
+  onSubmit={(e) =>
+    handleCommentSubmit(e, vibe.$id)
+  }
+  className="
+    mt-5
+    flex
+    flex-col
+    sm:flex-row
+    gap-3
+  "
+>
+  <input
+    type="text"
+    placeholder="Write a comment..."
+    value={commentInput[vibe.$id] || ""}
+    onChange={(e) =>
+      handleCommentChange(e, vibe.$id)
+    }
+    className="
+      flex-1
+      w-full
+      rounded-2xl
+      px-4
+      py-3
+      bg-white/5
+      border
+      border-white/10
+      text-white
+      placeholder:text-gray-500
+      focus:outline-none
+      focus:ring-2
+      focus:ring-pink-500/30
+      focus:border-pink-500
+      transition-all
+    "
+  />
 
-        <motion.button
-          whileHover={{ scale: 1.03 }}
-          whileTap={{ scale: 0.95 }}
-          type="submit"
-          className="
-            px-5
-            py-3
-            rounded-2xl
-            bg-gradient-to-r
-            from-pink-500
-            to-violet-500
-            text-white
-            font-medium
-            shadow-lg
-            shadow-pink-500/20
-            hover:shadow-pink-500/40
-            transition-all
-          "
-        >
-          Send
-        </motion.button>
-      </form>
+  <motion.button
+    whileHover={{ scale: 1.03 }}
+    whileTap={{ scale: 0.95 }}
+    type="submit"
+    className="
+      w-full
+      sm:w-auto
+      px-5
+      py-3
+      rounded-2xl
+      bg-gradient-to-r
+      from-pink-500
+      to-violet-500
+      text-white
+      font-medium
+      shadow-lg
+      shadow-pink-500/20
+      hover:shadow-pink-500/40
+      transition-all
+      whitespace-nowrap
+    "
+  >
+    Send
+  </motion.button>
+</form>
     </motion.div>
   );
 };
