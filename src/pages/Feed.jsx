@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from "react";
 import client, { databases, account } from "../appwrite/config";
 import VibeCard from "../components/VibeCard";
-import { Query } from "appwrite";
+import { Query, ID } from "appwrite";
 import { useUser } from "../hooks/useUser";
-import Stories from "../components/Stories"; 
+import Stories from "../components/Stories";
 import { createLikeNotification } from "../lib/notifications";
 import { createCommentNotification } from "../lib/notifications";
-import { createFollowNotification } from "../lib/notifications";
-
 
 const Feed = () => {
   const [vibes, setVibes] = useState([]);
@@ -17,117 +15,203 @@ const Feed = () => {
   const [commentsCountMap, setCommentsCountMap] = useState({});
   const [showComments, setShowComments] = useState({});
   const [userProfilesMap, setUserProfilesMap] = useState({});
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [filter, setFilter] = useState("same-mbti");
-  const { user, userId } = useUser(); // include userId from hook
+  const [currentUserId, setCurrentUserId] = useState(null);
 
+ const auth = useUser() || {};
 
+const user = auth.user;
+const userId = auth.userId;
+const loading = auth.loading;
+  // =========================
+  // CREATE PROFILE IF MISSING
+  // =========================
+  const ensureUserProfile = async (currentUser) => {
+    try {
+      const response = await databases.listDocuments(
+        import.meta.env.VITE_APPWRITE_DATABASE_ID,
+        import.meta.env.VITE_APPWRITE_USERPROFILES_COLLECTION_ID,
+        [Query.equal("userId", currentUser.$id)]
+      );
+
+      if (response.total === 0) {
+        await databases.createDocument(
+          import.meta.env.VITE_APPWRITE_DATABASE_ID,
+          import.meta.env.VITE_APPWRITE_USERPROFILES_COLLECTION_ID,
+          ID.unique(),
+          {
+            userId: currentUser.$id,
+            email: currentUser.email,
+            username: currentUser.name || "User",
+            mbtiType: "",
+            profilePicUrl: "",
+            createdAt: new Date().toISOString(),
+          }
+        );
+      }
+    } catch (err) {
+      console.error("Profile creation failed:", err);
+    }
+  };
+
+  // =========================
+  // FETCH USER PROFILES
+  // =========================
   const fetchUserProfiles = async () => {
     try {
       const res = await databases.listDocuments(
         import.meta.env.VITE_APPWRITE_DATABASE_ID,
         import.meta.env.VITE_APPWRITE_USERPROFILES_COLLECTION_ID
       );
-  
+
       const userMap = {};
+
       res.documents.forEach((profile) => {
         userMap[profile.userId] = profile;
       });
-  
+
       setUserProfilesMap(userMap);
     } catch (err) {
-      console.error("Failed to fetch user profiles ", err);
+      console.error("Failed to fetch profiles:", err);
     }
   };
-  
-  
 
+  // =========================
+  // FETCH VIBES
+  // =========================
   const fetchVibes = async () => {
-  setIsLoading(true);
-  try {
-    let response;
-    
-    // Fetch vibes based on filter
-    if (filter === "same-mbti" && userId) {
-      // Fetch all vibes
-      response = await databases.listDocuments(
+    try {
+      setIsLoading(true);
+
+      const response = await databases.listDocuments(
         import.meta.env.VITE_APPWRITE_DATABASE_ID,
         import.meta.env.VITE_APPWRITE_COLLECTION_ID,
         [Query.orderDesc("$createdAt")]
       );
-      // Get the current user's MBTI type
-      const currentUserProfile = userProfilesMap[userId];
-      const currentMBTI = currentUserProfile?.mbtiType;
 
-      if (currentMBTI) {
-        // Filter vibes locally by MBTI type
-        response.documents = response.documents.filter((v) => {
-          const authorProfile = userProfilesMap[v.userId];
+      let vibesData = response.documents;
+
+      const currentUserProfile = userProfilesMap?.[userId];
+
+      if (
+        filter === "same-mbti" &&
+        currentUserProfile?.mbtiType
+      ) {
+        const currentMBTI = currentUserProfile.mbtiType;
+
+        vibesData = vibesData.filter((vibe) => {
+          const authorProfile = userProfilesMap[vibe.userId];
+
           return authorProfile?.mbtiType === currentMBTI;
         });
       }
 
-    } else {
-      // For other filters, fetch all vibes without additional filtering
-      response = await databases.listDocuments(
+      setVibes(vibesData);
+    } catch (err) {
+      console.error("Failed to fetch vibes:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // =========================
+  // FETCH COMMENTS
+  // =========================
+  const fetchComments = async () => {
+    try {
+      const res = await databases.listDocuments(
         import.meta.env.VITE_APPWRITE_DATABASE_ID,
-        import.meta.env.VITE_APPWRITE_COLLECTION_ID,
-        [Query.orderDesc("$createdAt")]
+        import.meta.env.VITE_APPWRITE_COMMENTS_COLLECTION_ID
       );
-    }
 
-    let vibesData = response.documents;
-    
-    // Fetch user profiles if they are not loaded yet
-    if (filter === "same-mbti" && userId && userProfilesMap[userId]) {
-      const currentUserProfile = userProfilesMap[userId];
-      
-      if (currentUserProfile?.mbtiType) {
-        // Make sure all author profiles are available before filtering vibes
-        const missingUserIds = vibesData
-          .map((v) => v.userId)
-          .filter((id) => !userProfilesMap[id]);
+      const grouped = res.documents.reduce(
+        (acc, comment) => {
+          if (!acc.map[comment.vibeId]) {
+            acc.map[comment.vibeId] = [];
+          }
 
-        if (missingUserIds.length > 0) {
-          console.log("Fetching missing profiles:", missingUserIds);
-          await fetchUserProfiles(); // Refetch or merge missing profiles
+          acc.map[comment.vibeId].push(comment);
+
+          acc.counts[comment.vibeId] =
+            (acc.counts[comment.vibeId] || 0) + 1;
+
+          return acc;
+        },
+        {
+          map: {},
+          counts: {},
         }
+      );
 
-        // Now filter vibes based on the MBTI type
-        vibesData = vibesData.filter((v) => {
-          const authorProfile = userProfilesMap[v.userId];
-          return authorProfile?.mbtiType === currentUserProfile.mbtiType;
-        });
-      }
+      setCommentsMap(grouped.map);
+      setCommentsCountMap(grouped.counts);
+
+      await fetchCommentUserProfiles(res.documents);
+    } catch (err) {
+      console.error("Failed to fetch comments:", err);
     }
+  };
 
-    setVibes(vibesData);
-  } catch (error) {
-    console.error("Failed to fetch vibes:", error);
-  }
-  setIsLoading(false);
-};
+  // =========================
+  // FETCH COMMENT USER PROFILES
+  // =========================
+  const fetchCommentUserProfiles = async (comments) => {
+    try {
+      const uniqueUserIds = [
+        ...new Set(comments.map((c) => c.userId)),
+      ];
 
-    
+      const profiles = {};
 
+      for (const uid of uniqueUserIds) {
+        const res = await databases.listDocuments(
+          import.meta.env.VITE_APPWRITE_DATABASE_ID,
+          import.meta.env.VITE_APPWRITE_USERPROFILES_COLLECTION_ID,
+          [Query.equal("userId", uid)]
+        );
+
+        if (res.documents[0]) {
+          profiles[uid] = res.documents[0];
+        }
+      }
+
+      setCommentUserProfilesMap(profiles);
+    } catch (err) {
+      console.error("Failed comment profile fetch:", err);
+    }
+  };
+
+  // =========================
+  // LIKE
+  // =========================
   const handleLike = async (vibe) => {
     try {
-      const user = await account.get();
-      const currentUserId = user.$id;
-  
-      const likedByList = Array.isArray(vibe?.likedBy) ? vibe.likedBy : [];
-      const currentLikes = typeof vibe?.likes === "number" ? vibe.likes : 0;
-  
-      const hasLiked = likedByList.includes(currentUserId);
-  
+      const currentUser = await account.get();
+
+      const likedByList = Array.isArray(vibe?.likedBy)
+        ? vibe.likedBy
+        : [];
+
+      const currentLikes =
+        typeof vibe?.likes === "number"
+          ? vibe.likes
+          : 0;
+
+      const hasLiked = likedByList.includes(
+        currentUser.$id
+      );
+
       const updatedLikedBy = hasLiked
-        ? likedByList.filter((id) => id !== currentUserId)
-        : [...likedByList, currentUserId];
-  
+        ? likedByList.filter(
+            (id) => id !== currentUser.$id
+          )
+        : [...likedByList, currentUser.$id];
+
       const updatedLikes = hasLiked
         ? Math.max(currentLikes - 1, 0)
         : currentLikes + 1;
-  
+
       const updated = await databases.updateDocument(
         import.meta.env.VITE_APPWRITE_DATABASE_ID,
         import.meta.env.VITE_APPWRITE_COLLECTION_ID,
@@ -137,311 +221,198 @@ const Feed = () => {
           likes: updatedLikes,
         }
       );
-  
-      //  Update local state
+
       setVibes((prev) =>
-        prev.map((v) => (v.$id === vibe.$id ? { ...v, ...updated } : v))
+        prev.map((v) =>
+          v.$id === vibe.$id
+            ? { ...v, ...updated }
+            : v
+        )
       );
-  
-      //  Only send notification when it's a new like
+
       if (!hasLiked) {
-        const receiverId = vibe.userId; // The original poster's user ID
-        const senderId = currentUserId;
-        const vibeId = vibe.$id;
-  
-        await createLikeNotification(receiverId, senderId, vibeId);
+        await createLikeNotification(
+          vibe.userId,
+          currentUser.$id,
+          vibe.$id
+        );
       }
-  
     } catch (err) {
-      console.error("Failed to like/unlike ", err);
+      console.error("Like failed:", err);
     }
   };
-  
-   
-  const [currentUserId, setCurrentUserId] = useState(null);
 
-  useEffect(() => {
-
-    const unsubscribe = client.subscribe(
-      `databases.${import.meta.env.VITE_APPWRITE_DATABASE_ID}.collections.${import.meta.env.VITE_APPWRITE_COMMENTS_COLLECTION_ID}.documents`,
-      (response) => {
-        if (response.events.includes("databases.*.collections.*.documents.*.create")) {
-          // Someone added a new comment
-          fetchComments(); // Re-fetch updated comments
-        }
-      }
-    );
-    
-    const getUser = async () => {
-      try {
-        const user = await account.get();
-        setCurrentUserId(user.$id);
-      } catch (err) {
-        console.error("Failed to get current user ", err);
-      }
-    };
-    getUser();
-    return () => {
-      unsubscribe(); // Clean up subscription on unmount
-    };
-  }, []);
-  
+  // =========================
+  // COMMENT
+  // =========================
   const handleCommentChange = (e, vibeId) => {
     setCommentInput((prev) => ({
       ...prev,
       [vibeId]: e.target.value,
     }));
   };
-  
-  const handleCommentSubmit = async (e, vibeId) => {
+
+  const handleCommentSubmit = async (
+    e,
+    vibeId
+  ) => {
     e.preventDefault();
-  
+
     try {
-      const user = await account.get();
+      const currentUser = await account.get();
+
       const comment = commentInput[vibeId];
-  
+
       if (!comment?.trim()) return;
-  
+
       await databases.createDocument(
         import.meta.env.VITE_APPWRITE_DATABASE_ID,
-        import.meta.env.VITE_APPWRITE_COMMENTS_COLLECTION_ID, // new comments collection
-        'unique()', 
+        import.meta.env.VITE_APPWRITE_COMMENTS_COLLECTION_ID,
+        ID.unique(),
         {
-          vibeId: vibeId,
-          userId: user.$id,
-          content: comment,
+          vibeId,
+          userId: currentUser.$id,
+          content: comment.trim(),
           createdAt: new Date().toISOString(),
         }
       );
-  
-      // Clear input
+
       setCommentInput((prev) => ({
         ...prev,
-        [vibeId]: '',
+        [vibeId]: "",
       }));
-  
-      
-      fetchVibes();
-      const commentedVibe = vibes.find(v => v.$id === vibeId);
-if (!commentedVibe) return;
 
-const receiverId = commentedVibe.userId;
-const senderId = user.$id;
+      await fetchComments();
 
-await createCommentNotification(receiverId, senderId, vibeId);
-
-    } catch (error) {
-      console.error("Failed to post comment ", error);
-    }
-  };
-  
-  const fetchComments = async () => {
-    try {
-      const res = await databases.listDocuments(
-        import.meta.env.VITE_APPWRITE_DATABASE_ID,
-        import.meta.env.VITE_APPWRITE_COMMENTS_COLLECTION_ID
+      const vibe = vibes.find(
+        (v) => v.$id === vibeId
       );
-  
-      const grouped = res.documents.reduce(
-        (acc, comment) => {
-          if (!acc.map[comment.vibeId]) acc.map[comment.vibeId] = [];
-          acc.map[comment.vibeId].push(comment);
-          acc.counts[comment.vibeId] = (acc.counts[comment.vibeId] || 0) + 1;
-          return acc;
-        },
-        { map: {}, counts: {} }
-      );
-  
-      setCommentsMap(grouped.map);
-      setCommentsCountMap(grouped.counts);
-  
-      // Fetch commenter profiles
-      await fetchCommentUserProfiles(res.documents);
-  
-    } catch (error) {
-      console.error("Failed to fetch comments ", error);
-    }
-  };
 
-  
-
-  const fetchCommentUserProfiles = async (comments) => {
-    const uniqueUserIds = [...new Set(comments.map(c => c.userId))];
-    const profiles = {};
-  
-    for (const userId of uniqueUserIds) {
-      try {
-        const res = await databases.listDocuments(
-          import.meta.env.VITE_APPWRITE_DATABASE_ID,
-          import.meta.env.VITE_APPWRITE_USERPROFILES_COLLECTION_ID,
-          [Query.equal("userId", userId)]
+      if (vibe) {
+        await createCommentNotification(
+          vibe.userId,
+          currentUser.$id,
+          vibeId
         );
-        if (res.documents[0]) {
-          profiles[userId] = res.documents[0];
-        }
-      } catch (err) {
-        console.error("Failed to fetch profile for", userId, err);
       }
-    }
-  
-    setCommentUserProfilesMap(profiles);
-  };
-  
-  const handleFollow = async (followedUserId) => {
-    try {
-      const currentUser = await account.get();
-      const currentUserId = currentUser.$id;
-  
-      // Assuming you have a function to follow a user
-      await followUser(currentUserId, followedUserId);
-  
-      // Send follow notification
-      await createFollowNotification(followedUserId, currentUserId); // Trigger follow notification
-      setFollowing(prev => [...prev, followedUserId]);
     } catch (err) {
-      console.error("Failed to follow user", err);
+      console.error("Comment failed:", err);
     }
   };
-  
 
-  
+  // =========================
+  // INITIAL LOAD
+  // =========================
   useEffect(() => {
-    fetchUserProfiles();
+    const initializeFeed = async () => {
+      try {
+        console.log("Feed Rendered");
+console.log(vibes);
+console.log(userProfilesMap);
+        const currentUser = await account.get();
+
+        setCurrentUserId(currentUser.$id);
+
+        await ensureUserProfile(currentUser);
+
+        await fetchUserProfiles();
+      } catch (err) {
+        console.error(
+          "Initialization failed:",
+          err
+        );
+      }
+    };
+
+    initializeFeed();
   }, []);
-  
- useEffect(() => {
-  if (
-    user &&
-    currentUserId &&
-    userProfilesMap &&
-    Object.keys(userProfilesMap).length > 0 &&
-    userProfilesMap[currentUserId]
-  ) {
-    fetchVibes();
-    fetchComments();
+
+  // =========================
+  // REALTIME COMMENTS
+  // =========================
+  useEffect(() => {
+    const unsubscribe = client.subscribe(
+      `databases.${import.meta.env.VITE_APPWRITE_DATABASE_ID}.collections.${import.meta.env.VITE_APPWRITE_COMMENTS_COLLECTION_ID}.documents`,
+      () => {
+        fetchComments();
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+
+  // =========================
+  // FETCH DATA
+  // =========================
+  useEffect(() => {
+    if (
+      !loading &&
+      user &&
+      currentUserId
+    ) {
+      fetchVibes();
+      fetchComments();
+    }
+  }, [
+    loading,
+    user,
+    currentUserId,
+    filter,
+  ]);
+
+  // =========================
+  // REFETCH VIBES AFTER PROFILES LOAD
+  // =========================
+  useEffect(() => {
+    if (
+      Object.keys(userProfilesMap).length > 0
+    ) {
+      fetchVibes();
+    }
+  }, [userProfilesMap]);
+
+  // =========================
+  // LOADING
+  // =========================
+  if (loading || isLoading) {
+    return (
+      <div className="min-h-screen bg-[#0b1120] flex items-center justify-center text-white">
+        Loading Vibes...
+      </div>
+    );
   }
-}, [filter, user, userProfilesMap, currentUserId]);
 
-  
   return (
-  <div
-    className="
-      relative
-      min-h-screen
-      overflow-hidden
-      bg-[#0b1120]
-      text-white
-    "
-  >
-    {/* Background Glow */}
-    <div
-      className="
-        absolute
-        inset-0
-        overflow-hidden
-        pointer-events-none
-      "
-    >
-      <div
-        className="
-          absolute
-          top-[-120px]
-          left-[-80px]
-          w-[300px]
-          h-[300px]
-          bg-pink-500/20
-          blur-3xl
-          rounded-full
-        "
-      />
+    <div className="relative min-h-screen overflow-hidden bg-[#0b1120] text-white">
+      
+      {/* Glow */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-[-120px] left-[-80px] w-[300px] h-[300px] bg-pink-500/20 blur-3xl rounded-full" />
 
-      <div
-        className="
-          absolute
-          bottom-[-120px]
-          right-[-80px]
-          w-[320px]
-          h-[320px]
-          bg-violet-500/20
-          blur-3xl
-          rounded-full
-        "
-      />
-    </div>
+        <div className="absolute bottom-[-120px] right-[-80px] w-[320px] h-[320px] bg-violet-500/20 blur-3xl rounded-full" />
+      </div>
 
-    {/* Feed Container */}
-    <div
-      className="
-        relative
-        z-10
-        max-w-3xl
-        mx-auto
-        px-4
-        py-5
-      "
-    >
-      {/* Top Header */}
-      <div
-        className="
-          flex
-          items-center
-          justify-between
-          mb-5
-        "
-      >
-        <div>
-          <h1
-            className="
-              text-3xl
-              font-bold
-              bg-gradient-to-r
-              from-pink-500
-              via-violet-400
-              to-cyan-400
-              bg-clip-text
-              text-transparent
-            "
-          >
-            VibeSoul
-          </h1>
+      <div className="relative z-10 max-w-3xl mx-auto px-4 py-5">
 
-          <p
-            className="
-              text-sm
-              text-gray-400
-              mt-1
-            "
-          >
-            Feel the vibe of your tribe ✨
-          </p>
-        </div>
+        {/* Header */}
+        <div className="flex items-center justify-between mb-5">
 
-        {/* Filter */}
-        <div
-          className="
-            relative
-          "
-        >
+          <div>
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-pink-500 via-violet-400 to-cyan-400 bg-clip-text text-transparent">
+              VibeSoul
+            </h1>
+
+            <p className="text-sm text-gray-400 mt-1">
+              Feel the vibe of your tribe ✨
+            </p>
+          </div>
+
           <select
             value={filter}
             onChange={(e) =>
               setFilter(e.target.value)
             }
-            className="
-              appearance-none
-              px-4
-              py-2
-              rounded-2xl
-              bg-white/[0.06]
-              border
-              border-white/10
-              text-sm
-              text-white
-              backdrop-blur-xl
-              focus:outline-none
-              focus:ring-2
-              focus:ring-pink-500/30
-            "
+            className="px-4 py-2 rounded-2xl bg-white/[0.06] border border-white/10"
           >
             <option
               value="all"
@@ -458,113 +429,17 @@ await createCommentNotification(receiverId, senderId, vibeId);
             </option>
           </select>
         </div>
-      </div>
 
-      {/* Stories */}
-      <div
-        className="
-          mb-6
-          rounded-3xl
-          border
-          border-white/10
-          bg-white/[0.04]
-          backdrop-blur-2xl
-          p-2
-        "
-      >
-        <Stories currentUser={user} />
-      </div>
-
-      {/* Feed */}
-      <div className="space-y-6">
-        {isLoading ? (
-
-
-    <div className="relative min-h-screen overflow-hidden bg-[#0b1120] text-white animate-pulse">
-
-      {/* Background Glow */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-
-        <div className="absolute top-[-120px] left-[-80px] w-[300px] h-[300px] bg-pink-500/10 blur-3xl rounded-full" />
-
-        <div className="absolute bottom-[-120px] right-[-80px] w-[320px] h-[320px] bg-violet-500/10 blur-3xl rounded-full" />
-
-      </div>
-
-      {/* Container */}
-      <div className="relative z-10 max-w-3xl mx-auto px-4 py-5">
-
-        {/* Header Skeleton */}
-        <div className="flex items-center justify-between mb-6">
-
-          <div className="space-y-3">
-            <div className="h-7 w-40 bg-white/10 rounded-lg" />
-            <div className="h-4 w-56 bg-white/10 rounded-lg" />
-          </div>
-
-          <div className="h-10 w-32 bg-white/10 rounded-2xl" />
-
+        {/* Stories */}
+        <div className="mb-6 rounded-3xl border border-white/10 bg-white/[0.04] backdrop-blur-2xl p-2">
+          <Stories currentUser={user} />
         </div>
 
-        
-
-        {/* Feed Cards Skeleton */}
+        {/* Feed */}
         <div className="space-y-6">
-
-          {Array.from({ length: 4 }).map((_, i) => (
-            <div
-              key={i}
-              className="rounded-3xl border border-white/10 bg-white/[0.05] overflow-hidden"
-            >
-
-              {/* User header */}
-              <div className="flex items-center gap-3 p-4">
-
-                <div className="w-10 h-10 rounded-full bg-white/10" />
-
-                <div className="space-y-2">
-                  <div className="h-3 w-32 bg-white/10 rounded" />
-                  <div className="h-2 w-20 bg-white/10 rounded" />
-                </div>
-
-              </div>
-
-              {/* Image */}
-              <div className="h-72 bg-white/10" />
-
-              {/* Content */}
-              <div className="p-4 space-y-3">
-
-                <div className="h-3 w-full bg-white/10 rounded" />
-                <div className="h-3 w-5/6 bg-white/10 rounded" />
-                <div className="h-3 w-2/3 bg-white/10 rounded" />
-
-                {/* Actions */}
-                <div className="flex gap-4 mt-4">
-
-                  <div className="h-8 w-20 bg-white/10 rounded-xl" />
-                  <div className="h-8 w-20 bg-white/10 rounded-xl" />
-                  <div className="h-8 w-20 bg-white/10 rounded-xl" />
-
-                </div>
-
-              </div>
-
-            </div>
-          ))}
-
-        </div>
-      </div>
-    </div>
-  
-
-        ) : vibes.length > 0 ? (
-
-          vibes.map((vibe) => {
-            const userProfile =
-              userProfilesMap[vibe.userId];
-
-            return (
+          {vibes.length > 0 ? (
+            vibes.map((vibe) => (
+              
               <VibeCard
                 key={vibe.$id}
                 vibe={vibe}
@@ -593,64 +468,29 @@ await createCommentNotification(receiverId, senderId, vibeId);
                 commentUserProfilesMap={
                   commentUserProfilesMap
                 }
-                userProfile={userProfile}
-                onFollow={handleFollow}
+                userProfile={
+                  userProfilesMap[
+                    vibe.userId
+                  ]
+                }
               />
-            );
-          })
+            ))
+          ) : (
+            <div className="flex flex-col items-center justify-center py-20 text-center">
+              <h2 className="text-2xl font-semibold">
+                No vibes yet
+              </h2>
 
-        ) : (
-
-          /* Empty State */
-          <div
-            className="
-              flex
-              flex-col
-              items-center
-              justify-center
-              py-20
-              text-center
-            "
-          >
-            <div
-              className="
-                w-24
-                h-24
-                rounded-full
-                bg-gradient-to-r
-                from-pink-500/20
-                to-violet-500/20
-                blur-2xl
-                absolute
-              "
-            />
-
-            <h2
-              className="
-                relative
-                text-2xl
-                font-semibold
-              "
-            >
-              No vibes yet
-            </h2>
-
-            <p
-              className="
-                relative
-                text-gray-400
-                mt-2
-                max-w-sm
-              "
-            >
-              Follow more souls or post your
-              first vibe ✨
-            </p>
-          </div>
-        )}
+              <p className="text-gray-400 mt-2 max-w-sm">
+                Follow more souls or post your
+                first vibe ✨
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
-  </div>
-);
+  );
 };
+
 export default Feed;

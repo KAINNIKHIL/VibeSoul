@@ -3,20 +3,20 @@ import { createContext, useContext, useEffect, useState } from "react";
 const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
-  const [isDark, setIsDark] = useState(true);
 
-  // Sync theme on mount
-  useEffect(() => {
+  const [isDark, setIsDark] = useState(() => {
     const themeFromStorage = localStorage.getItem("theme");
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
 
-    const shouldUseDark = themeFromStorage === "dark" || (!themeFromStorage && prefersDark);
+    if (themeFromStorage) {
+      return themeFromStorage === "dark";
+    }
 
-    setIsDark(shouldUseDark);
-  }, []);
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  });
 
   useEffect(() => {
     const html = document.documentElement;
+
     if (isDark) {
       html.classList.add("dark");
       localStorage.setItem("theme", "dark");

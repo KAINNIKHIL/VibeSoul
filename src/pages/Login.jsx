@@ -9,51 +9,72 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [pass, setPass] = useState("");
   const [loggedIn, setLoggedIn] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [checkingSession, setCheckingSession] = useState(true);
 
   const navigate = useNavigate();
 
-  // Check Session
+  // Check Existing Session
   useEffect(() => {
     const checkSession = async () => {
       try {
         const user = await account.get();
+
         console.log("Already Logged In:", user);
 
         setLoggedIn(true);
         navigate("/feed");
       } catch {
         console.log("No active session");
+      } finally {
+        setCheckingSession(false);
       }
     };
 
     checkSession();
-  }, []);
+  }, [navigate]);
 
   // Login Handler
   const handleLogin = async (e) => {
     e.preventDefault();
 
+    if (loading) return;
+
     if (loggedIn) {
       toast.info("You're already logged in!");
-      return navigate("/feed");
+      navigate("/feed");
+      return;
+    }
+
+    const normalizedEmail = email.trim().toLowerCase();
+    const cleanPassword = pass.trim();
+
+    if (!normalizedEmail || !cleanPassword) {
+      toast.error("Please fill all fields");
+      return;
     }
 
     try {
+      setLoading(true);
+
       // Create Session
-      await account.createEmailPasswordSession(email, pass);
+      await account.createEmailPasswordSession(
+        normalizedEmail,
+        cleanPassword
+      );
 
       // Get Current User
       const user = await account.get();
       const userId = user.$id;
 
-      // Check if profile exists
+      // Check Profile
       const response = await databases.listDocuments(
         import.meta.env.VITE_APPWRITE_DATABASE_ID,
         import.meta.env.VITE_APPWRITE_USERPROFILES_COLLECTION_ID,
         [Query.equal("userId", userId)]
       );
 
-      // Create Profile if not exists
+      // Create Profile If Missing
       if (response.total === 0) {
         await databases.createDocument(
           import.meta.env.VITE_APPWRITE_DATABASE_ID,
@@ -73,15 +94,30 @@ const Login = () => {
       }
 
       toast.success("Login Successful!");
+
       navigate("/feed");
+
     } catch (err) {
-      toast.error(err.message);
+      console.error("Login Error:", err);
+
+      toast.error("Invalid email or password");
+    } finally {
+      setLoading(false);
     }
   };
 
+  // Prevent UI Flash
+  if (checkingSession) {
+    return (
+      <div className="min-h-screen bg-[#050816] flex items-center justify-center text-white">
+        Loading...
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#050816] flex items-center justify-center relative overflow-hidden px-6">
-      
+
       {/* Background Blobs */}
       <div className="absolute top-[-100px] left-[-100px] w-[350px] h-[350px] bg-pink-500/20 blur-3xl rounded-full"></div>
 
@@ -89,7 +125,7 @@ const Login = () => {
 
       {/* Main Container */}
       <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-10 items-center z-10">
-        
+
         {/* Left Side */}
         <motion.div
           initial={{ opacity: 0, x: -40 }}
@@ -103,25 +139,13 @@ const Login = () => {
           </h1>
 
           <p className="mt-6 text-gray-300 text-xl max-w-md leading-relaxed">
-            Find your people by vibe.  
+            Find your people by vibe.
             Share your thoughts, emotions, memes, and energy with personalities
             that truly resonate with you.
           </p>
-
-          {/* MBTI Pills */}
-          <div className="flex flex-wrap gap-3 mt-8">
-            {["INFJ", "ENFP", "INTJ", "ISFP", "ENTP"].map((type) => (
-              <div
-                key={type}
-                className="px-4 py-2 rounded-full bg-white/5 border border-white/10 text-gray-300 backdrop-blur-md"
-              >
-                {type}
-              </div>
-            ))}
-          </div>
         </motion.div>
 
-        {/* Right Side Login Card */}
+        {/* Login Card */}
         <motion.div
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
@@ -152,6 +176,8 @@ const Login = () => {
                 placeholder="Enter your email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                disabled={loading}
+                autoComplete="email"
                 required
                 className="
                   w-full
@@ -167,6 +193,7 @@ const Login = () => {
                   focus:ring-pink-500/40
                   focus:border-pink-500
                   transition
+                  disabled:opacity-50
                 "
               />
             </div>
@@ -182,6 +209,8 @@ const Login = () => {
                 placeholder="Enter your password"
                 value={pass}
                 onChange={(e) => setPass(e.target.value)}
+                disabled={loading}
+                autoComplete="current-password"
                 required
                 className="
                   w-full
@@ -197,14 +226,16 @@ const Login = () => {
                   focus:ring-pink-500/40
                   focus:border-pink-500
                   transition
+                  disabled:opacity-50
                 "
               />
             </div>
 
             {/* Button */}
             <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              disabled={loading}
+              whileHover={!loading ? { scale: 1.02 } : {}}
+              whileTap={!loading ? { scale: 0.98 } : {}}
               type="submit"
               className="
                 w-full
@@ -219,9 +250,11 @@ const Login = () => {
                 shadow-pink-500/20
                 hover:shadow-pink-500/40
                 transition
+                disabled:opacity-50
+                disabled:cursor-not-allowed
               "
             >
-              Login
+              {loading ? "Logging In..." : "Login"}
             </motion.button>
 
             {/* Signup Link */}
@@ -234,6 +267,7 @@ const Login = () => {
                 Create one
               </Link>
             </p>
+
           </form>
         </motion.div>
       </div>
