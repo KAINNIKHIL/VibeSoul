@@ -203,54 +203,73 @@ const Feed = () => {
   // LIKE
   // =========================
   const handleLike = async (vibe) => {
-    try {
-      const currentUser = await account.get();
+  try {
+    const currentUser = await account.get();
 
-      const likedByList = Array.isArray(vibe?.likedBy)
-        ? vibe.likedBy
-        : [];
+    const likedByList = Array.isArray(vibe?.likedBy)
+      ? vibe.likedBy
+      : [];
 
-      const currentLikes =
-        typeof vibe?.likes === "number" ? vibe.likes : 0;
+    const currentLikes =
+      typeof vibe?.likes === "number"
+        ? vibe.likes
+        : 0;
 
-      const hasLiked = likedByList.includes(currentUser.$id);
+    const hasLiked =
+      likedByList.includes(currentUser.$id);
 
-      const updatedLikedBy = hasLiked
-        ? likedByList.filter((id) => id !== currentUser.$id)
-        : [...likedByList, currentUser.$id];
-
-      const updatedLikes = hasLiked
-        ? Math.max(currentLikes - 1, 0)
-        : currentLikes + 1;
-
-      const updated = await databases.updateDocument(
-        import.meta.env.VITE_APPWRITE_DATABASE_ID,
-        import.meta.env.VITE_APPWRITE_COLLECTION_ID,
-        vibe.$id,
-        {
-          likedBy: updatedLikedBy,
-          likes: updatedLikes,
-        }
-      );
-
-      setVibes((prev) =>
-        prev.map((v) =>
-          v.$id === vibe.$id ? { ...v, ...updated } : v
+    const updatedLikedBy = hasLiked
+      ? likedByList.filter(
+          (id) => id !== currentUser.$id
         )
-      );
-
-      if (!hasLiked) {
-        await createLikeNotification(
-          vibe.userId,
+      : [
+          ...likedByList,
           currentUser.$id,
-          vibe.$id
-        );
-      }
-    } catch (err) {
-      console.error(err);
-    }
-  };
+        ];
 
+    const updatedLikes = hasLiked
+      ? Math.max(currentLikes - 1, 0)
+      : currentLikes + 1;
+
+    await databases.updateDocument(
+      import.meta.env
+        .VITE_APPWRITE_DATABASE_ID,
+
+      import.meta.env
+        .VITE_APPWRITE_COLLECTION_ID,
+
+      vibe.$id,
+
+      {
+        likedBy: updatedLikedBy,
+        likes: updatedLikes,
+      }
+    );
+
+    // 🔥 Instant UI update
+    setVibes((prev) =>
+      prev.map((v) =>
+        v.$id === vibe.$id
+          ? {
+              ...v,
+              likedBy: updatedLikedBy,
+              likes: updatedLikes,
+            }
+          : v
+      )
+    );
+
+    if (!hasLiked) {
+      await createLikeNotification(
+        vibe.userId,
+        currentUser.$id,
+        vibe.$id
+      );
+    }
+  } catch (err) {
+    console.error(err);
+  }
+};
   // =========================
   // COMMENT
   // =========================
