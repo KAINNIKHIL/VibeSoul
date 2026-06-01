@@ -37,13 +37,15 @@ const VibeCard = ({
   // LIKE STATE
   // =========================
   const isLiked =
-    Array.isArray(vibe?.likedBy) &&
-    vibe.likedBy.includes(currentUserId);
+  Array.isArray(vibe?.likedBy) &&
+  vibe.likedBy.includes(currentUserId);
 
-  // =========================
-  // DOUBLE CLICK LIKE
-  // =========================
-  const handleDoubleClick = () => {
+console.log("currentUserId:", currentUserId);
+console.log("likedBy:", vibe?.likedBy);
+console.log("isLiked:", isLiked);
+
+// DOUBLE CLICK LIKE
+const handleDoubleClick = () => {
     if (!isLiked) {
       handleLike?.(vibe);
     }
@@ -129,14 +131,7 @@ const VibeCard = ({
           </Link>
         </div>
 
-        {/* TEXT */}
-        {vibe?.vibeText && (
-          <div className="px-4 pb-4">
-            <p className="text-white whitespace-pre-wrap leading-7 text-[15px]">
-              {vibe.vibeText}
-            </p>
-          </div>
-        )}
+        
 
         {/* IMAGE */}
         {vibe?.imageUrl && (
@@ -197,61 +192,47 @@ const VibeCard = ({
 
               {/* LIKE */}
               <motion.button
-                whileTap={{
-                  scale: 0.8,
-                }}
-                onClick={() =>
-                  handleLike?.(vibe)
-                }
-              >
-
-                <Heart
-  size={25}
-  strokeWidth={2}
-  className={`
-    transition-all duration-300
-    ${
+  whileTap={{ scale: 0.8 }}
+  onClick={() => handleLike?.(vibe)}
+  className="flex items-center gap-1.5"
+>
+  <Heart
+    size={24}
+    strokeWidth={2}
+    fill={isLiked ? "currentColor" : "none"}
+    className={`transition-all duration-300 ${
       isLiked
-        ? `
-          fill-red-500
-          text-red-500
-          scale-125
-          drop-shadow-[0_0_12px_rgba(236,72,153,0.9)]
-        `
-        : `
-          text-white
-          hover:text-red-400
-        `
-    }
-  `}
-/>
+        ? "text-red-500"
+        : "text-white hover:text-red-400"
+    }`}
+  />
 
-              </motion.button>
+  <span className="text-sm text-gray-300">
+    {vibe?.likes || 0}
+  </span>
+</motion.button>
+
 
               {/* COMMENT */}
               <motion.button
-                whileTap={{
-                  scale: 0.85,
-                }}
-                onClick={() =>
-                  setShowComments?.(
-                    (prev) => ({
-                      ...prev,
-                      [vibe?.$id]:
-                        !prev?.[
-                          vibe?.$id
-                        ],
-                    })
-                  )
-                }
-              >
+  whileTap={{ scale: 0.85 }}
+  onClick={() =>
+    setShowComments?.((prev) => ({
+      ...prev,
+      [vibe?.$id]: !prev?.[vibe?.$id],
+    }))
+  }
+  className="flex items-center gap-1.5"
+>
+  <MessageCircle
+    size={24}
+    className="text-white hover:text-cyan-400 transition"
+  />
 
-                <MessageCircle
-                  size={24}
-                  className="text-white hover:text-cyan-400 transition"
-                />
-
-              </motion.button>
+  <span className="text-sm text-gray-300">
+    {commentCount || 0}
+  </span>
+</motion.button>
 
               {/* SHARE */}
               <motion.button
@@ -302,9 +283,16 @@ const VibeCard = ({
           {/* LIKES */}
           <div className="mt-3">
 
-            <p className="text-sm font-semibold text-white">
-              {vibe?.likes || 0} likes
+            
+
+            {/* TEXT */}
+        {vibe?.vibeText && (
+          <div className="px-4 pb-4">
+            <p className="text-white whitespace-pre-wrap leading-7 text-[15px]">
+              {vibe.vibeText}
             </p>
+          </div>
+        )}
 
           </div>
         </div>
@@ -344,7 +332,7 @@ const VibeCard = ({
                 stiffness: 120,
                 damping: 18,
               }}
-              className="w-full sm:max-w-lg h-[70vh] sm:h-[80vh]
+              className="w-full sm:max-w-lg h-[75vh] sm:h-[80vh]
               bg-[#0f172a] rounded-t-3xl sm:rounded-3xl
               border border-white/10 overflow-hidden flex flex-col"
             >

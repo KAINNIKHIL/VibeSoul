@@ -517,7 +517,7 @@ const Feed = () => {
               <VibeCard
                 key={vibe.$id}
                 vibe={vibe}
-                currentUserId={userId}
+                currentUserId={currentUserId}
                 commentInput={commentInput}
                 commentsMap={commentsMap}
                 showComments={showComments}
