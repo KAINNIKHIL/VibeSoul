@@ -303,7 +303,7 @@ const VibeCard = ({
           <div className="mt-3">
 
             <p className="text-sm font-semibold text-white">
-              {vibe?.likes || 0} vibes
+              {vibe?.likes || 0} likes
             </p>
 
           </div>
@@ -323,7 +323,7 @@ const VibeCard = ({
             exit={{
               opacity: 0,
             }}
-            className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-end justify-center p-0 sm:p-4"
+            className="fixed top-[72px] left-0 right-0 bottom-0 z-[9999] bg-black/70 backdrop-blur-sm flex items-end justify-center sm:p-4"
           >
 
             <motion.div
@@ -341,9 +341,10 @@ const VibeCard = ({
               }}
               transition={{
                 type: "spring",
-                damping: 22,
+                stiffness: 120,
+                damping: 18,
               }}
-              className="w-full sm:max-w-lg h-[85vh] sm:h-[80vh]
+              className="w-full sm:max-w-lg h-[70vh] sm:h-[80vh]
               bg-[#0f172a] rounded-t-3xl sm:rounded-3xl
               border border-white/10 overflow-hidden flex flex-col"
             >
