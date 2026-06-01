@@ -173,8 +173,19 @@ const Signup = () => {
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7 }}
-          className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-8 md:p-10 shadow-2xl"
+          className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-8 md:p-10 shadow-2xl m-2"
         >
+
+          <div className="lg:hidden text-center mb-8">
+  <h1 className="text-5xl font-extrabold">
+    <span className="text-pink-500">Vibe</span>
+    <span className="text-white">Soul</span>
+  </h1>
+
+  <p className="text-gray-400 mt-3 text-sm">
+    Find your people by vibe
+  </p>
+</div>
 
           <div className="text-center">
             <h2 className="text-4xl font-bold text-white">
