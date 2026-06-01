@@ -332,7 +332,7 @@ const handleDoubleClick = () => {
                 stiffness: 120,
                 damping: 18,
               }}
-              className="w-full sm:max-w-lg h-[75vh] sm:h-[80vh]
+              className="w-full sm:max-w-lg h-[70vh] sm:h-[80vh]
               bg-[#0f172a] rounded-t-3xl sm:rounded-3xl
               border border-white/10 overflow-hidden flex flex-col"
             >
