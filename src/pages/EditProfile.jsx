@@ -191,7 +191,7 @@ const EditProfile = () => {
 
       await account.deleteSession("current");
 
-      toast.success("Logged out");
+      
 
       navigate("/");
 
@@ -325,33 +325,48 @@ const EditProfile = () => {
           />
 
           {/* MBTI */}
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
+  <input
+    name="mbtiType"
+    value={formData.mbtiType}
+    onChange={(e) =>
+      setFormData({
+        ...formData,
+        mbtiType: e.target.value
+          .toUpperCase()
+          .replace(/[^A-Z]/g, "")
+          .slice(0, 4),
+      })
+    }
+    className="
+      w-24 sm:flex-1
+      p-3
+      rounded-xl
+      bg-white/5
+      border border-white/10
+      uppercase
+      text-center
+      tracking-wider
+    "
+    placeholder="MBTI"
+  />
 
-            <input
-              name="mbtiType"
-              value={formData.mbtiType}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  mbtiType: e.target.value
-                    .toUpperCase()
-                    .replace(/[^A-Z]/g, "")
-                    .slice(0, 4),
-                })
-              }
-              className="flex-1 p-3 rounded-xl bg-white/5 border border-white/10"
-              placeholder="MBTI"
-            />
-
-            <button
-              type="button"
-              onClick={() => navigate("/mbti-test")}
-              className="px-4 rounded-xl bg-pink-500 hover:bg-pink-600 transition"
-            >
-              Test
-            </button>
-
-          </div>
+  <button
+    type="button"
+    onClick={() => navigate("/mbti-test")}
+    className="
+      px-4
+      py-3
+      rounded-xl
+      bg-pink-500
+      hover:bg-pink-600
+      transition
+      whitespace-nowrap
+    "
+  >
+    Test
+  </button>
+</div>
 
           {/* BIO */}
           <div>

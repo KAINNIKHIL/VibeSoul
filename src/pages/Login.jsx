@@ -14,6 +14,20 @@ const Login = () => {
 
   const navigate = useNavigate();
 
+  const handleGoogleLogin = async () => {
+  try {
+    await account.createOAuth2Session(
+      "google",
+      `${window.location.origin}/feed`,
+      `${window.location.origin}/login`
+    );
+  } catch (error) {
+    console.error(error);
+    toast.error("Google login failed");
+  }
+};
+
+
   // Check Existing Session
   useEffect(() => {
     const checkSession = async () => {
@@ -146,12 +160,25 @@ const Login = () => {
         </motion.div>
 
         {/* Login Card */}
-        <motion.div
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.7 }}
-          className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-3xl p-8 md:p-10 shadow-2xl"
-        >
+        {/* Login Card */}
+<motion.div
+  initial={{ opacity: 0, y: 40 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.7 }}
+  className="backdrop-blur-xl bg-white/[0.06] border border-white/10 rounded-3xl p-8 md:p-10 shadow-2xl m-2"
+>
+
+<div className="lg:hidden text-center mb-8">
+  <h1 className="text-5xl font-extrabold">
+    <span className="text-pink-500">Vibe</span>
+    <span className="text-white">Soul</span>
+  </h1>
+
+  <p className="text-gray-400 mt-3 text-sm">
+    Find your people by vibe
+  </p>
+</div>
+
           <div className="text-center">
             <h2 className="text-4xl font-bold text-white">
               Welcome Back
@@ -257,7 +284,60 @@ const Login = () => {
               {loading ? "Logging In..." : "Login"}
             </motion.button>
 
-            {/* Signup Link */}
+            
+
+          
+        <div className="flex items-center gap-4 py-1">
+  
+
+  
+</div>
+
+<div className="space-y-4">
+  <div className="flex items-center gap-4">
+    <div className="h-px flex-1 bg-white/10"></div>
+
+    <span className="text-xs text-gray-500 uppercase tracking-wider whitespace-nowrap">
+      Or continue with
+    </span>
+
+    <div className="h-px flex-1 bg-white/10"></div>
+  </div>
+
+  <motion.button
+    whileHover={{ scale: 1.02 }}
+    onClick={handleGoogleLogin}
+    whileTap={{ scale: 0.98 }}
+    type="button"
+    className="
+      w-full
+      py-3
+      rounded-2xl
+      bg-white
+      text-gray-900
+      font-medium
+      flex
+      items-center
+      justify-center
+      gap-3
+      hover:bg-gray-100
+      transition
+    "
+  >
+    {/* Google Icon */}
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 48 48"
+      className="w-5 h-5"
+    >
+      ...
+    </svg>
+
+    Continue with Google
+  </motion.button>
+</div>
+
+{/* Signup Link */}
             <p className="text-center text-gray-400 pt-3">
               Don’t have an account?{" "}
               <Link
@@ -267,9 +347,10 @@ const Login = () => {
                 Create one
               </Link>
             </p>
-
-          </form>
+</form>
         </motion.div>
+
+        
       </div>
     </div>
   );
