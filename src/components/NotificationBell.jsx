@@ -17,7 +17,7 @@ const NotificationBell = ({ currentUserId }) => {
   const [userMap, setUserMap] = useState({});
 
   const dropdownRef = useRef();
-
+  
   // Fetch Notifications
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -138,7 +138,9 @@ const NotificationBell = ({ currentUserId }) => {
       <motion.button
         whileTap={{ scale: 0.9 }}
         whileHover={{ scale: 1.05 }}
-        onClick={() => setOpen(!open)}
+        onClick={() =>{
+         setOpen(!open)
+        }}
         className="
           relative
           p-1

@@ -21,40 +21,23 @@ const StoryUploader = ({ currentUser }) => {
     useState(null);
 
   const fileInputRef = useRef();
-
+ 
   // Upload Story
   const handleFileChange = async (e) => {
-    const file = e.target.files[0];
+ 
+  const file = e.target.files[0];
 
-    if (!file || !currentUser) return;
+  try {
+    setUploading(true);
 
-    // Preview
-    const previewUrl =
-      URL.createObjectURL(file);
+    await uploadStory(file, currentUser);
 
-    setPreview(previewUrl);
+    
 
-    try {
-      setUploading(true);
-
-      await uploadStory(file, currentUser);
-
-      toast.success("Story updated ✨");
-
-      // Remove preview after upload
-      setTimeout(() => {
-        setPreview(null);
-      }, 1200);
-
-    } catch (err) {
-      console.error("Upload failed:", err);
-
-      toast.error("Failed to update story");
-
-    } finally {
-      setUploading(false);
-    }
-  };
+  } catch (err) {
+    console.error(" ERROR", err);
+  }
+};
 
   return (
     <div

@@ -19,11 +19,14 @@ const Feed = () => {
   const [filter, setFilter] = useState("all");
   const [openFilter, setOpenFilter] = useState(false);
   const [currentUserId, setCurrentUserId] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
 
   const auth = useUser() || {};
   const user = auth.user;
   const userId = auth.userId;
   const loading = auth.loading;
+  
+
 
   // =========================
   // CREATE PROFILE
@@ -329,9 +332,10 @@ const Feed = () => {
   useEffect(() => {
     const initializeFeed = async () => {
       try {
-        const currentUser = await account.get();
+        const userData = await account.get();
 
-        setCurrentUserId(currentUser.$id);
+    setCurrentUser(userData);
+    setCurrentUserId(userData.$id);
 
         await ensureUserProfile(currentUser);
 
@@ -508,7 +512,7 @@ const Feed = () => {
         </div>
 
         <div className="mb-6 rounded-3xl border border-white/10 bg-white/[0.04] backdrop-blur-2xl p-2">
-          <Stories currentUser={user} />
+          <Stories currentUser={currentUser} />
         </div>
 
         <div className="space-y-6">

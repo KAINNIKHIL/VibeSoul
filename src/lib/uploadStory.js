@@ -24,7 +24,7 @@ export const uploadStory = async (file, userData) => {
       import.meta.env.VITE_APPWRITE_BUCKET_ID,
       uploadedFile.$id
     );
-
+    console.log(fileUrl);
     const now = new Date();
     const expiresAt = new Date(now.getTime() + 24 * 60 * 60 * 1000);
 

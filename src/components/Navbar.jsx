@@ -21,7 +21,7 @@ const Navbar = () => {
   const [loading, setLoading] = useState(true);
 
   const navigate = useNavigate();
-
+  
   useEffect(() => {
     const fetchUser = async () => {
       try {
@@ -33,6 +33,7 @@ const Navbar = () => {
         setLoading(false);
       }
     };
+    
 
     fetchUser();
   }, []);
@@ -134,8 +135,6 @@ const Navbar = () => {
             items-center
             gap-1
             sm:gap-2
-            overflow-x-auto
-            scrollbar-hide
           "
         >
           {/* Home */}

@@ -40,9 +40,7 @@ const VibeCard = ({
   Array.isArray(vibe?.likedBy) &&
   vibe.likedBy.includes(currentUserId);
 
-console.log("currentUserId:", currentUserId);
-console.log("likedBy:", vibe?.likedBy);
-console.log("isLiked:", isLiked);
+
 
 // DOUBLE CLICK LIKE
 const handleDoubleClick = () => {

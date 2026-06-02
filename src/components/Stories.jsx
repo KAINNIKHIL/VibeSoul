@@ -7,6 +7,7 @@ import StoryUploader from "./StoryUploader";
 
 const Stories = ({ currentUser }) => {
   const [activeGroup, setActiveGroup] = useState(null);
+  
 
   return (
     <>
