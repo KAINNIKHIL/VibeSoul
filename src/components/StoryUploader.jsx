@@ -28,15 +28,20 @@ const StoryUploader = ({ currentUser }) => {
   const file = e.target.files[0];
 
   try {
-    setUploading(true);
+  setUploading(true);
 
-    await uploadStory(file, currentUser);
+  await uploadStory(file, currentUser);
 
-    
+  
+  setTimeout(() => {
+    setPreview(null);
+  }, 1200);
 
-  } catch (err) {
-    console.error(" ERROR", err);
-  }
+} catch (err) {
+  console.error(err);
+} finally {
+  setUploading(false);
+}
 };
 
   return (
