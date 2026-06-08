@@ -52,19 +52,7 @@ const Signup = () => {
     try {
       setLoading(true);
 
-      // =========================
-      // CHECK EXISTING USER PROFILE
-      // =========================
-      const existingProfiles = await databases.listDocuments(
-        import.meta.env.VITE_APPWRITE_DATABASE_ID,
-        import.meta.env.VITE_APPWRITE_USERPROFILES_COLLECTION_ID,
-        [Query.equal("email", normalizedEmail)]
-      );
-
-      if (existingProfiles.total > 0) {
-        toast.error("Account already exists");
-        return;
-      }
+      
 
       // =========================
       // CREATE ACCOUNT
@@ -75,38 +63,41 @@ const Signup = () => {
         cleanPassword,
         trimmedName
       );
+      console.log("ACCOUNT CREATED");
 
       // =========================
       // LOGIN USER
       // =========================
-      await account.createEmailPasswordSession(
+      const session = await account.createEmailPasswordSession(
         normalizedEmail,
         cleanPassword
       );
-
+      console.log("SESSION CREATED", session);
       // =========================
       // GET CURRENT USER
       // =========================
+      await new Promise(resolve => setTimeout(resolve, 1000));
       const currentUser = await account.get();
 
+      await databases.createDocument(
+  import.meta.env.VITE_APPWRITE_DATABASE_ID,
+  import.meta.env.VITE_APPWRITE_USERPROFILES_COLLECTION_ID,
+  ID.unique(),
+  {
+    userId: currentUser.$id,
+    email: currentUser.email,
+    username: trimmedName,
+    mbtiType: "",
+    profilePicUrl: "",
+    createdAt: new Date().toISOString(),
+  }
+);
+      
       // =========================
       // CREATE USER PROFILE
       // =========================
-      await databases.createDocument(
-        import.meta.env.VITE_APPWRITE_DATABASE_ID,
-        import.meta.env.VITE_APPWRITE_USERPROFILES_COLLECTION_ID,
-        ID.unique(),
-        {
-          userId: currentUser.$id,
-          email: currentUser.email,
-          username: trimmedName,
-          mbtiType: "",
-          profilePicUrl: "",
-          createdAt: new Date().toISOString(),
-        }
-      );
-
-      toast.success("Account created successfully!");
+      
+      
 
       navigate("/feed");
 

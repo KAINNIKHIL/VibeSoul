@@ -201,8 +201,12 @@ const NotificationBell = ({ currentUserId }) => {
             className="
               absolute
               right-0
+              top-full
               mt-4
-              w-[360px]
+              max-sm:left-0
+  max-sm:-translate-x-1/2
+              w-[75vw]
+              max-w-[360px]
               max-h-[500px]
               overflow-y-auto
               rounded-3xl

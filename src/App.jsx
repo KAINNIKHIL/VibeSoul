@@ -16,6 +16,7 @@ import FollowingList from "./pages/FollowingList";
 import Chat from "./pages/Chat";
 import MBTITest from "./pages/MBTItest";
 import ChatList from "./pages/ChatList";
+import { AuthProvider } from "./hooks/useUser";
 
 import { useTheme } from "./context/ThemeContext";
 
@@ -96,9 +97,12 @@ function AppContent() {
 
 function App() {
   return (
-    <Router>
+     <AuthProvider>
+      <Router>
       <AppContent />
     </Router>
+     </AuthProvider>
+    
   );
 }
 

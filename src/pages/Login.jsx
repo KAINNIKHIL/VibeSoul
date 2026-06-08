@@ -4,6 +4,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { Query } from "appwrite";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
+import { useUser } from "../hooks/useUser";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -13,6 +14,8 @@ const Login = () => {
   const [checkingSession, setCheckingSession] = useState(true);
 
   const navigate = useNavigate();
+
+  const { refetch } = useUser();
 
   const handleGoogleLogin = async () => {
   try {
@@ -77,6 +80,8 @@ const Login = () => {
         cleanPassword
       );
 
+      await refetch();
+
       // Get Current User
       const user = await account.get();
       const userId = user.$id;
@@ -104,10 +109,10 @@ const Login = () => {
           }
         );
 
-        console.log("Profile Created");
+        
       }
 
-      toast.success("Login Successful!");
+      
 
       navigate("/feed");
 
