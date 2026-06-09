@@ -278,7 +278,7 @@ const UserProfile = () => {
               <img
                 src={
                   userProfile?.profilePicUrl ||
-                  "/default-avatar.png"
+                  "/avatar.png"
                 }
                 alt="Profile"
                 className="

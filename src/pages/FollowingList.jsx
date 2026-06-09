@@ -103,7 +103,7 @@ const FollowingList = () => {
     </div>
   );
 
-  if (following.length === 0) return <p className="text-center">You’re not following anyone yet.</p>;
+  if (following.length === 0) return <p className="text-center">Not following anyone yet.</p>;
 
  return (
   <div

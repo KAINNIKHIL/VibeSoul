@@ -276,7 +276,7 @@ const EditProfile = () => {
   key={formData.profilePicUrl}
   src={
     formData.profilePicUrl ||
-    "/default-avatar.png"
+    "/avatar.png"
   }
   alt="Profile"
   className="w-28 h-28 rounded-full object-cover border-4 border-pink-500/40"
