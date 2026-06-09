@@ -62,7 +62,7 @@ const NotificationBell = ({ currentUserId }) => {
             tempMap[user.userId] = {
               username: user.username || "Anonymous",
               profilePicUrl:
-                user.profilePicUrl || "/default-avatar.png",
+                user.profilePicUrl || "/avatar.png",
             };
           }
         });
