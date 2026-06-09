@@ -168,11 +168,31 @@ npm run dev
 
   ## Screenshots
 - Login Page
+  
+  ![Login Page](screenshots/login.png)
+  
 - Feed Page
+
+  ![Feed Page](feed/.png)
+  
 - Profile Page
+
+  ![Profile Page](screenshots/profile.png)
+  
 - Story Feature
+
+![Story Feature](screenshots/story.png)
+  
 - Chat Screen
+
+  ![Chat Screen](screenshots/chat.png)
+  
 - Search Page
+
+![Search Page](screenshots/search.png)
+
+
+
 
  # 💜 About VibeSoul
 
