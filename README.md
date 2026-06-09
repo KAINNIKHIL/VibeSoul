@@ -169,15 +169,15 @@ npm run dev
   ## Screenshots
 - Login Page
   
-  ![Login Page](screenshots/login.png)
+![Login Page](screenshots/login.png)
   
 - Feed Page
 
-  ![Feed Page](feed/.png)
+![Feed Page](screenshots/feed.png)
   
 - Profile Page
 
-  ![Profile Page](screenshots/profile.png)
+![Profile Page](screenshots/profile.png)
   
 - Story Feature
 
@@ -185,7 +185,7 @@ npm run dev
   
 - Chat Screen
 
-  ![Chat Screen](screenshots/chat.png)
+![Chat Screen](screenshots/chat.png)
   
 - Search Page
 
