@@ -160,7 +160,7 @@ export default function ChatList() {
                       <img
                         src={
                           otherUser?.profilePicUrl ||
-                          "/default-avatar.png"
+                          "/avatar.png"
                         }
                         className="relative w-14 h-14 rounded-full object-cover border-2 border-pink-500/40"
                       />

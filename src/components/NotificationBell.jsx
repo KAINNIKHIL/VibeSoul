@@ -260,7 +260,7 @@ const NotificationBell = ({ currentUserId }) => {
 
                   const senderAvatar =
                     sender?.profilePicUrl ||
-                    "/default-avatar.png";
+                    "/avatar.png";
 
                   let message = "";
                   let emoji = "🔔";

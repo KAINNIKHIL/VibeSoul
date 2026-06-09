@@ -88,7 +88,7 @@ const handleDoubleClick = () => {
             <img
               src={
                 userProfile?.profilePicUrl ||
-                "/default-avatar.png"
+                "/avatar.png"
               }
               alt="user"
               className="w-11 h-11 rounded-full object-cover border border-pink-500/40"

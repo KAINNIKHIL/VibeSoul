@@ -612,7 +612,7 @@ const Chat = () => {
               <img
                 src={
                   receiverProfile.profilePicUrl ||
-                  "/default-avatar.png"
+                  "/avatar.png"
                 }
                 alt="profile"
                 className="

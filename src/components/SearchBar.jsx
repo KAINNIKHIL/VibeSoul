@@ -168,7 +168,7 @@ const SearchBar = () => {
                     {/* Avatar */}
                     <img
                       src={
-                        user.profilePicUrl || "/default-avatar.png"
+                        user.profilePicUrl || "/avatar.png"
                       }
                       alt="Profile"
                       className="
